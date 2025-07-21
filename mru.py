@@ -121,3 +121,7 @@ class MruInterfaz:
     def mostrar (self):
         self.ventana.mainloop()
 
+
+mru = MruInterfaz()
+mru.mostrar()
+
