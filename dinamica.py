@@ -1,5 +1,6 @@
 from calculadora_vector import*
 from vector import*
+from grafica import*
 import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg 
@@ -31,12 +32,6 @@ class Dinamica:
 
 #####################################################################################################################################################################
 class DinamicaInterfaz:
-    """La lista colores permite ir graficando los vectores que agreguemos de un color diferente, NO SE AGREGA SELF
-    YA QUE SE DETERMINA COMO VARIABLE ESTATICA, LO QUE SIGNIFICA QUE NO ES PROPIA DE LA INSTANCIA Y POR LO TANTO 
-    TENDRA EL MISMO VALOR"""
-    colores = ["red", "green", "blue", "yellow", "cyan", "magenta", "black", "white", "orange","purple",  
-    "pink", "brown", "gray", "olive", "navy"]
-
 #####################################################################################################################################################################
     """En el contructor de la interfaz se agregan todos los componentes de la misma, recuerde que el 
     termino self indica a las variables o metodos que son propios de la clase"""
@@ -69,7 +64,7 @@ class DinamicaInterfaz:
         self.y_angulo.pack()                             # Se agrega a la ventana
 
         # Botón para crear un vector en forma polar
-        tk.Button(self.frame_izquierdo, text="Agregar Vector", command=self.crear_polar).pack(pady=2)  # Al hacer clic, se ejecuta crear_polar
+        tk.Button(self.frame_izquierdo, text="Agregar Fuerza", command=self.crear_fuerza).pack(pady=2)  # Al hacer clic, se ejecuta crear_polar
 
         # Lista para mostrar los vectores agregados
         self.lista_vectores = tk.Listbox(self.frame_izquierdo)   # Se crea un listbox para mostrar vectores
@@ -97,20 +92,7 @@ class DinamicaInterfaz:
         tk.Button(self.frame_izquierdo, text="Calcular", command=self.calcular).pack(pady=2)        # Ejecuta calcular
         tk.Button(self.frame_izquierdo, text="Eliminar datos", command=self.eliminar).pack(pady=2)  # Limpia los campos
 
-        # Crear y configurar la figura de matplotlib
-        self.fig, self.ax = plt.subplots()         # Se crea una figura y un eje
-        self.ax.axhline(0, color="black", lw=0.5)  # Dibuja el eje X
-        self.ax.axvline(0, color="black", lw=0.5)  # Dibuja el eje Y
-        self.ax.set_xlim(-10, 10)                  # Límite horizontal
-        self.ax.set_ylim(-10, 10)                  # Límite vertical
-        self.ax.grid(True)                         # Muestra la cuadrícula
-        self.ax.set_xlabel("x")                    # Etiqueta del eje x
-        self.ax.set_ylabel("y")                    # Etiqueta del eje y
-        self.ax.set_aspect('equal')                # Mantiene proporción 1:1 en la gráfica
-
-        # Inserta la gráfica de matplotlib dentro de la ventana de Tkinter
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame_derecho)        # Se vincula la figura a Tkinter
-        self.canvas.get_tk_widget().pack(pady=10, fill=tk.BOTH, expand=True)  # Se empaqueta y permite expandirse
+        self.grafica = GraficaInterfaz(self.frame_derecho)
 
         # Lista para almacenar los vectores creados
         self.vectores = []  # Se inicializa como lista vacía
@@ -119,22 +101,10 @@ class DinamicaInterfaz:
     """La soguiente funcion permite crear los vectores y darle funcionalidad al boton de agregar vector
     creando un vector de forma polar ya que en los campos se agrega la magnitud y el angulo, y 
     se agrega a la lista de vectores ademas actualizar la grafica"""
-    def crear_polar(self):
-        """Creamos una excepcion, pero ¡que es lo que hace?: 
-        EL contructor de vector requiere dos valores numericos, supongamos que el usuario por error ingresa una cadena de caracteres,
-        un numero con los puntos mal situados, comas en lugar de puntos o simplemente deja algun campo vacio, esto podria generar 
-        un error en cadena que bloquee nuestro programa, para evitar este problema usamos execepciones.
-        Dentro del try se coloca todo aquello que se quiere poner a prueba en este caso la optencion de los datos
-        y la creacion del vector, si esta prueba no genera ningun error procedera a agregar este vector a la lista y actualizar la grafica.
-        Si el programa detecta algun error saltara esta seccion y ejecutara lo que se encuentra dentro del except, en este caso un mensaje 
-        de error y asi evitara que existan problemas durante la ejecucion del programa"""
-        try:
-            # Crea el vector polar usando los valores ingresados por el usuario
-            vector = VectorPolar(float(self.x_r.get()), float(self.y_angulo.get()))  # Convierte las entradas en flotantes y crea un objeto VectorPolar
-            self.vectores.append(vector)           # Agrega el nuevo vector a la lista de vectores
-            self.actualizar_grafica(self.vectores)              # Actualiza la lista visual y posiblemente el gráfico con los nuevos datos
-        except:
-            messagebox.showerror("Error", "Los datos ingresados son incorrectos.")  # Imprimimos un mensaje dado cualquier error detectado, como datos incopatibles, o campos vacios
+    def crear_fuerza(self):
+        self.vectores.append(InstanciaVector.crear_polar(float(self.x_r.get()),
+                             float(self.y_angulo.get())))
+        self.actualizar_grafica(self.vectores)
         
 #####################################################################################################################################################################
     """La siguiente funcion permite actualizar la grafica dependiendo de los vectores agregados a la lista y tambien permite
@@ -148,49 +118,15 @@ class DinamicaInterfaz:
             se imprimen los datos del primer vector hasta arriba de la lista, en la segunda interacion gragicas a tk.ENd
             nos permite agregar el nuevo vector por debajo del anterior, sin necesida de saber en que posicion o numero se quedo"""
             self.lista_vectores.insert(tk.END, f"({vector.r},{vector.angulo}°)")
-
-        self.ax.clear()                            # Limpia el área de dibujo
-        self.ax.axhline(0,color="black", lw=0.5)   # Dibuja el eje x
-        self.ax.axvline(0,color="black", lw=0.5)   # Dibuja el eje y
-
-        """Se agrega una exepcion para evitar generar errores si es que se llama a esta funcion y la lista de vectores esta vacia
-        esto puede ocurrir cuando se van eliminando vectores individualmente. Y si la lista se queda sin vectores se pueden generar errores en 
-        self.ax.set_xlim(min(*[v.x for v in self.vectores], 0) - 1, max(*[v.x for v in self.vectores], 0) + 1),"""
-        try:
-            # Ajusta los límites dinámicamente basados en los vectores
-            """Para los limite inferior del eje x se determina cual es el valor minimo con respecto a todos 
-            los vectores ingresados y se le resta 1 para mejor visualizacion los mismo para el limite superior, pero en este caso
-            se suma 1"""
-            self.ax.set_xlim(min(*[v.x for v in fuerzas], 0) - 1, max(*[v.x for v in fuerzas], 0) + 1)  #Limite inferior y superior del eje x 
-            #Para el eje y se realiza lo mismo que en el eje x
-            self.ax.set_ylim(min(*[v.y for v in fuerzas], 0) - 1, max(*[v.y for v in fuerzas], 0) + 1)  #limite inferior y superior del eje y
-            self.ax.grid(True)             # Activa el fondo cuadriculado
-            self.ax.set_aspect('equal')    # Mantiene proporción 1:1 en la gráfica
-
-            # Dibuja cada vector con su color y etiqueta
-            for vector, color in zip(fuerzas, DinamicaInterfaz.colores):
-                plt.quiver(0, 0, vector.x, vector.y, angles="xy", scale_units="xy",
-                       scale=1, color=color, label=f"({vector.r:.2f}, {vector.angulo:.2f})")
-            
-            self.ax.legend()      # Muestra la leyenda con etiquetas de vectores
-            self.canvas.draw()    # Refresca el lienzo en la interfaz
-        except:
-            """Si se detecto un error en try se genera la exepcion, como se habia comentado anteriormente, 
-            el error se puede producir cuando no exista ningun vector dentro de la lista por ello se llama a la funcion de
-            limpiar grafica simplemente"""
-            self.limpiar_grafica()
+        
+        self.grafica.actualizar_grafica(fuerzas)
+         
 
 #####################################################################################################################################################################
     """Enta funcion permite limpiar la grafica y restaurar los valores pedeterminados de la misma"""
     def limpiar_grafica(self):
-        self.ax.clear()                            # Limpia la gráfica
-        self.ax.axhline(0,color="black", lw=0.5)   # Redibuja el eje x
-        self.ax.axvline(0,color="black", lw=0.5)   # Redibuja el eje y
-        self.ax.set_xlim(-10, 10)                  # Restaura límites por defecto del eje x
-        self.ax.set_ylim(-10, 10)                  # Restaura límites por defecto del eje y
-        self.ax.grid(True)                         # Activa la cuadricula
-        self.canvas.draw()                         # Refresca la gráfica
-        self.vectores.clear()                      # Elimina todos los vectores"""
+        self.grafica.limpiar_grafica()
+        self.vectores.clear()            # Elimina todos los vectores
 
 #####################################################################################################################################################################
     """Este metodo se ejecutara automaticamente cuando se detecte algun cambio dentro del combo box"""
