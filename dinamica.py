@@ -35,11 +35,19 @@ class DinamicaInterfaz:
 #####################################################################################################################################################################
     """En el contructor de la interfaz se agregan todos los componentes de la misma, recuerde que el 
     termino self indica a las variables o metodos que son propios de la clase"""
-    def __init__(self):
-        # Crear ventana principal
-        self.ventana = tk.Tk()             # Se crea la ventana 
-        self.ventana.title("Dinamica")     # Agregamos un titulo a la ventana
-        self.ventana.geometry("900x550")   # Determinamos el tamñao
+    def __init__(self, ventana_principal = None, frame = None):
+        #Si se manda una ventana principal MRU trabajara como ventana secundaria
+        if ventana_principal is not None and frame is None:
+            self.ventana = tk.Toplevel(ventana_principal)
+        #Si se manda un frame, MRU se colocara dentro de ese frame
+        elif frame is not None and ventana_principal is None:
+            self.ventana = frame
+        #En caso contrario trabajara como una ventana principal
+        else:
+            # Crear ventana principal
+            self.ventana = tk.Tk()             # Se crea la ventana 
+            self.ventana.title("Dinamica")     # Agregamos un titulo a la ventana
+            self.ventana.geometry("900x550")   # Determinamos el tamñao
 
         # Crear dos marcos: uno para los datos (izquierda), otro para la gráfica (derecha)
         self.frame_izquierdo = tk.Frame(self.ventana)
@@ -212,10 +220,3 @@ class DinamicaInterfaz:
         self.ventana.mainloop()   # Muestra la ventana configurada en pantalla
 
 #####################################################################################################################################################################
-
-# Instanciamos la clase de Dinamica Interfaz
-interfaz = DinamicaInterfaz()
-# Mostramos la interfaz
-interfaz.mostrar()
-
-
