@@ -2,6 +2,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt   
 import tkinter as tk
 from vector import *
+import numpy as np
 
 class GraficaInterfaz():
     colores = ["red", "green", "blue", "yellow", "cyan", "magenta", "black", "white", "orange","purple",  
@@ -46,6 +47,27 @@ class GraficaInterfaz():
             for vector, color in zip(vectores, GraficaInterfaz.colores):
                 plt.quiver(0, 0, vector.x, vector.y, angles="xy", scale_units="xy",
                        scale=1, color=color, label=f"({vector.r:.2f}, {vector.angulo:.2f})")
+            
+            self.ax.legend()      # Muestra la leyenda con etiquetas de vectores
+            self.canvas.draw()    # Refresca el lienzo en la interfaz
+        except:
+            self.limpiar_grafica()
+
+    def graficar_funcion(self, funcion, tiempo_maximo):
+        self.ax.clear()                            # Limpia el área de dibujo
+        self.ax.axhline(0,color="black", lw=0.5)   # Dibuja el eje x
+        self.ax.axvline(0,color="black", lw=0.5)   # Dibuja el eje y
+
+        tiempo = np.linspace(0, tiempo_maximo, 100)
+
+        try:
+            self.ax.set_xlim(0, tiempo_maximo)  #Limite inferior y superior del eje x 
+            #Para el eje y se realiza lo mismo que en el eje x
+            self.ax.set_ylim(0, funcion(tiempo_maximo))  #limite inferior y superior del eje y
+            self.ax.grid(True)             # Activa el fondo cuadriculado
+            self.ax.set_aspect('equal')    # Mantiene proporción 1:1 en la gráfica
+
+            self.ax.plot(tiempo, funcion(tiempo))
             
             self.ax.legend()      # Muestra la leyenda con etiquetas de vectores
             self.canvas.draw()    # Refresca el lienzo en la interfaz
