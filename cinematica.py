@@ -1,6 +1,8 @@
 from sympy import symbols, lambdify, sympify, diff
 import matplotlib.pyplot as plt
 import numpy as np
+import tkinter as tk
+from grafica import GraficaInterfaz
 
 class Cinematica:
     def __init__(self, ecu_posicion):
@@ -42,6 +44,70 @@ class Cinematica:
     def graficar_aceleracion():
         pass
     
-cinematica = Cinematica("3*t")
-print(cinematica.calcular_posicion(2))
-cinematica.graficar_posicion(0,10)
+
+class CinematicaInterfaz:
+    def __init__(self, ventana_principal = None, frame = None):
+        #Si se manda una ventana principal MRU trabajara como ventana secundaria
+        if ventana_principal is not None and frame is None:
+            self.ventana = tk.Toplevel(ventana_principal)
+        #Si se manda un frame, MRU se colocara dentro de ese frame
+        elif frame is not None and ventana_principal is None:
+            self.ventana = frame
+        #En caso contrario trabajara como una ventana principal
+        else:
+            # Crear ventana principal
+            self.ventana = tk.Tk()             # Se crea la ventana 
+            self.ventana.title("MRU")     # Agregamos un titulo a la ventana
+            self.ventana.geometry("900x400")   # Determinamos el tamñao
+
+        tk.Label(self.ventana, text="Cinematica").pack()
+
+        frame_izquierdo = tk.Frame(self.ventana, width=200)
+        frame_izquierdo.pack(side="left", fill="y")
+
+        subframe_inferior = tk.Frame(frame_izquierdo, height=30, width=200)
+        subframe_inferior.pack(side="bottom", fill="x",padx=5, pady=5)
+
+        subframe_izquierdo = tk.Frame(frame_izquierdo, width=100)
+        subframe_izquierdo.pack(side="left", fill="y",padx=5, pady=10)
+
+        subframe_derecho = tk.Frame(frame_izquierdo, width=100)
+        subframe_derecho.pack(side="right", fill="y", pady=10, padx=5)
+
+        frame_derecho = tk.Frame(self.ventana, width=100)
+        frame_derecho.pack(side="right", fill=tk.BOTH, expand=True)
+
+        tk.Label(subframe_izquierdo, text="Ecuacion de Posicion").pack(padx=5, pady=5)
+        entry_ecupos = tk.Entry(subframe_izquierdo)
+        entry_ecupos.pack(padx=5, pady=5)
+
+        tk.Label(subframe_izquierdo, text="Tiempo").pack(padx=5, pady=5)
+        entry_tiempo = tk.Entry(subframe_izquierdo)
+        entry_tiempo.pack(padx=5, pady=5)
+
+        tk.Label(subframe_derecho, text="Posicion").pack(padx=5, pady=5)
+        entry_posicion = tk.Entry(subframe_derecho)
+        entry_posicion.pack(padx=5, pady=5)
+
+        tk.Label(subframe_derecho, text="Velocidad").pack(padx=5, pady=5)
+        entry_velocidad = tk.Entry(subframe_derecho)
+        entry_velocidad.pack(padx=5, pady=5)
+
+        tk.Label(subframe_derecho, text="Aceleracion").pack(padx=5, pady=5)
+        entry_aceleracion = tk.Entry(subframe_derecho)
+        entry_aceleracion.pack(padx=5, pady=5)
+
+        btn_calcular = tk.Button(subframe_inferior, text="Calcular")
+        btn_calcular.pack(anchor="center")
+
+        btn_graficas_pos = tk.Button(subframe_inferior, text="Grafica (x)")
+        btn_graficas_pos.pack(side="left", pady=10, padx=10)
+
+        btn_graficas_vel = tk.Button(subframe_inferior, text="Grafica (V)")
+        btn_graficas_vel.pack(side="left", pady=10, padx=10)
+
+        btn_graficas_acel = tk.Button(subframe_inferior, text="Grafica (A)")
+        btn_graficas_acel.pack(side="left", pady=10, padx=10)
+
+        GraficaInterfaz(frame_derecho)
+        self.ventana.mainloop()
